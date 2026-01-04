@@ -1,25 +1,25 @@
-from PIL import ImageGrab
-from datetime import datetime
+import datetime
 import os
+from PIL import ImageGrab
+import win32gui
 
 
-def capture_screen(save_dir="data/screenshots"):
-    """
-    Captures the current screen and saves it as an image.
-    Returns the saved image file path.
-    """
-
-    os.makedirs(save_dir, exist_ok=True)
-
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_path = os.path.join(save_dir, f"screen_{timestamp}.png")
-
-    screenshot = ImageGrab.grab()
-    screenshot.save(file_path)
-
-    return file_path
+def get_active_window_bbox():
+    hwnd = win32gui.GetForegroundWindow()
+    rect = win32gui.GetWindowRect(hwnd)
+    return rect  # (left, top, right, bottom)
 
 
-if __name__ == "__main__":
-    path = capture_screen()
-    print(f"Screen captured → {path}")
+def capture_screen() -> str:
+    os.makedirs("data/screenshots", exist_ok=True)
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"data/screenshots/active_window_{timestamp}.png"
+
+    left, top, right, bottom = get_active_window_bbox()
+
+    img = ImageGrab.grab(bbox=(left, top, right, bottom))
+    img.save(filename)
+
+    print(f"Active window captured → {filename}")
+    return filename
