@@ -1,36 +1,32 @@
 import os
-from openai import OpenAI
+from google import genai
 
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-client = OpenAI()
-
+# Use the exact string from your successful list
+MODEL_NAME = "gemini-2.5-flash-lite"
 
 def answer_from_screen(context: dict, question: str) -> str:
-    """
-    Answers a question using ONLY the extracted screen content.
-    """
-
-    content = context.get("content", "")
+    screen_text = context.get("content", "")
 
     prompt = f"""
 You are a screen-aware assistant.
-
-You must answer ONLY using the text content extracted from the user's screen.
-If the answer is not present, say:
-
-"I cannot find that information on this screen."
+Only use the information found in the extracted on-screen text.
+Do NOT guess or use outside knowledge.
 
 Screen Content:
 ----------------
-{content}
+{screen_text}
 
 User Question:
 {question}
 """
 
-    response = client.responses.create(
-        model="gpt-4.1-mini",
-        input=prompt
-    )
-
-    return response.output_text
+    try:
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt
+        )
+        return response.text.strip()
+    except Exception as e:
+        return f"[Gemini Error] {e}"
