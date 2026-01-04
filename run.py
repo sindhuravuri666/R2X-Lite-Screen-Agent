@@ -1,29 +1,38 @@
 import os
-import sys
+import time
 from capture.screen_capture import capture_screen
 from core.qa_engine import answer_from_screen
 
+# Configuration
+DELAY_TIME = 3 
+
 def main():
     print("--- R2X Lite Screen Agent Interactive Mode ---")
-    print("Type 'exit' or 'quit' to stop.\n")
+    print(f"Instructions: Enter your question, then you will have {DELAY_TIME} seconds")
+    print("to switch to the window you want to analyze.")
+    print("Type 'exit' to stop.\n")
 
     while True:
-        # 1. Ask the user for a question first
-        user_query = input("Ask a question about your screen: ").strip()
+        user_query = input("Ask a question: ").strip()
 
         if user_query.lower() in ['exit', 'quit']:
-            print("Shutting down...")
             break
 
         if not user_query:
             continue
 
+        # Countdown delay
+        print(f"Starting capture in...", end=" ", flush=True)
+        for i in range(DELAY_TIME, 0, -1):
+            print(f"{i}...", end=" ", flush=True)
+            time.sleep(1)
+        print("BEEP!")
+
         try:
-            # 2. Capture the screen only when a question is asked
-            print("Capturing screen...")
+            # 1. Capture the screen after the delay
             img_object = capture_screen()
 
-            # 3. Get the answer using the direct PIL object
+            # 2. Process with Vision AI
             print("Thinking...")
             answer = answer_from_screen(img_object, user_query)
 
